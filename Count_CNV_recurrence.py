@@ -101,7 +101,7 @@ def Countout(cd,cnv,outfile,outsample):
     for c in cnv: #list of lists
       fname,chrm,copyn,typea,ngen,genes1=c[0],c[1],c[2],c[3],c[4],c[5]
       genes=genes1.split(';') #make into list of genes instead of string of geneA;geneB;etc.
-      #types,fnames,temp=[],[],[]
+      types,fnames,temp=[],[],[]
 
       if ngen>0:
 
@@ -109,12 +109,11 @@ def Countout(cd,cnv,outfile,outsample):
           curchr,curtype=chrm,typea
 
           if k in cnvout:
-            #types,fnames=cnvout[k][2],cnvout[k][3]
-            #types.append(typea)
-            #fnames.append(fname)
-            #temp=[cnvout[k][0],cnvout[k][1],types,fnames]
-            cnvout[k][2].append(typea),cnvout[k][3].append(fname)
-            cnvout[k]=[cnvout[k][0],cnvout[k][1],cnvout[k][2],cnvout[k][3]]#temp
+            types,fnames=cnvout[k][2],cnvout[k][3]
+            types.append(typea)
+            fnames.append(fname)
+            temp=[cnvout[k][0],cnvout[k][1],types,fnames]
+            cnvout[k]=temp
           else:
             cnvout[k]=[chrm,v,[typea],[fname]]
 
@@ -139,16 +138,19 @@ def Countout(cd,cnv,outfile,outsample):
     outfile.write(myline)
     outfile.write('\n')
 
-
+  cnvc=0
   header1="Gene"+"\t"+"Chrm"+"\t"+"Sample"+"\t"+"Type"+"\n"
   outsample.write(header1)
 
   #output a line for each samplename for each gene, ie. 3 lines for GeneA if it occurs in 3 samples
   for w,e in cnvout.items():
     for x,y in zip(e[2],e[3]): #types,fnames
+      if cnvc<10:
+        print w,x,y
+        cnvc+=1
       myline1=w+"\t"+x+"\t"+y #Gene type fname
-      outfile.write('\n')
-      outsample.write(myline)
+      outsample.write(myline1)
+      outsample.write('\n')
 
   return cnvout
 
@@ -158,7 +160,7 @@ if __name__ == "__main__":
   if len(sys.argv)>4:
     experimentals=sys.argv[1] #file names for "experimental" condition
     controls=sys.argv[2] #file names for "control" condition
-    Files=sys.argv[3:] #
+    Files=sys.argv[3:] #CNV.outfiles
 
   else:
     sys.exit("Script works for multiple filtered CNV files only; exiting")
@@ -184,9 +186,9 @@ if __name__ == "__main__":
 
   expgenes,cntgenes,expexcl,cntexcl=Get_stats(QL,experimentals,controls)
 
-  outf=open('CNV.merged.out.tsv', 'w')
-  outs=open('CNV.merged.sample.tsv', 'w')
-  gened=Countout(expexcl,QL,outf,outs)
+  outf=open('CNV.merged.nonexcl.out.tsv', 'w')
+  outs=open('CNV.merged.nonexcl.sample.tsv', 'w')
+  gened=Countout(expgenes,QL,outf,outs)
   outf.close()
   outs.close()
 
